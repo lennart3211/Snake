@@ -11,9 +11,27 @@
 #include <unistd.h>
 #endif
 
+#define LAUNCH_COMMAND "java -cp Snake.jar Main"
+
 void LaunchSnake()
 {
-
+#ifdef _WIN32
+    STARTUPINFO si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+    if (!CreateProcess(nullptr, (LPSTR)LAUNCH_COMMAND, nullptr, nullptr, false, nullptr, nullptr, &si, &pi)) 
+    {
+        std::cerr << "[ERROR] Failed to launch Snake" << std::endl;
+    }
+#else
+    if (fork() == 0)
+    {
+        execlp("java", "java", "-cp", "Snake.jar", "Main", nullptr);
+        std::cerr << "[ERROR] Failed to launch Snake" << std::endl;
+    }
+#endif
 }
 
 int main()
@@ -61,9 +79,7 @@ int main()
 
         if (ImGui::Button("Launch Snake", buttonSize))
         {
-            if (system("java -cp Snake.jar Main") != 0) {
-                std::cerr << "[ERROR] Failed to launch Snake" << std::endl;
-            }
+            LaunchSnake();
         }
 
         ImGui::End();
