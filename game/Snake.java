@@ -54,9 +54,9 @@ public class Snake {
 
     public  void run() {
         webSocketClient.connect();
-        while (true) {
+        // while (true) {
             System.out.println("Snake");
-        }
+        // }
         webSocketClient.close();
     }
 }

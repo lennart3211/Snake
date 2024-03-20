@@ -1,15 +1,13 @@
 cd build
 
 cmake ..\launcher
-
 cmake --build .
 
-javac ..\game\Snake.java ..\game\Main.java
+javac -cp ".;..\game\vendor\Java-WebSocket-1.5.6.jar" ..\game\Snake.java ..\game\Main.java
 
 move ..\game\*.class
 
 jar cvf Snake.jar *.class
-
 
 move debug\Launcher.exe .
 
