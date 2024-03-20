@@ -1,8 +1,14 @@
+mvn clean package
+rm -rf target
 cd build
+rm *.class
 cmake ../launcher
 make
-javac ../game/Snake.java ../game/Main.java
-mv ../game/*.class .
-jar cvf Snake.jar *.class
-rm *.class
+rm -rf vendor
+rm -rf CMakeFiles
+rm Makefile
+rm *.cmake
+rm *.ini
+rm *.txt
+
 cd ..
