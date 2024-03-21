@@ -11,8 +11,6 @@
 #include <unistd.h>
 #endif
 
-#define LAUNCH_COMMAND "java -cp Snake.jar Main"
-
 void LaunchSnake()
 {
 #ifdef _WIN32
@@ -21,7 +19,15 @@ void LaunchSnake()
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
-    if (!CreateProcess(nullptr, (LPSTR)LAUNCH_COMMAND, nullptr, nullptr, false, nullptr, nullptr, &si, &pi)) 
+    if (!CreateProcess(nullptr,
+			    (LPSTR)"java -cp \".;Java-WebSocket-1.5.6.jar;slf4j-api-2.0.9.jar;logback-classic-1.5.3.jar;logback-core-1.5.3.jar\" Main",
+			    nullptr,
+			    nullptr,
+			    false,
+			    0, 
+			    nullptr,
+			    nullptr,
+			    &si, &pi)) 
     {
         std::cerr << "[ERROR] Failed to launch Snake" << std::endl;
     }
