@@ -1,13 +1,10 @@
-cd build
+cd game
+javac -cp lib/Java-WebSocket-1.5.6.jar Main.java Snake.java
+move *.class ..\build
 
+cd ..\build
 cmake ..\launcher
 cmake --build .
-
-javac -cp ".;..\game\vendor\Java-WebSocket-1.5.6.jar" ..\game\Snake.java ..\game\Main.java
-
-move ..\game\*.class
-
-jar cvf Snake.jar *.class
 
 move debug\Launcher.exe .
 
@@ -19,7 +16,6 @@ rmdir /s /q x64
 
 del *.vcxproj
 del *.filters
-del *.class
 del *.cmake
 del *.ini
 del *.txt
