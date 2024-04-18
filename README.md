@@ -1,1 +1,1 @@
-![Sonny and Mariel high fiving.](https://content.codecademy.com/courses/learn-cpp/community-challenge/highfive.gif)
+![Project Report](https://github.com/lennart3211/Snake/Project_Report.pdf)
