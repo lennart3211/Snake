@@ -1,10 +1,14 @@
 #include "launcher.h"
 
+#include <wlanapi.h>
+#include <codecvt>
+#include <locale>
+#pragma comment(lib, "Wlanapi.lib")
+
 Launcher::Launcher() {
     InitGLFW();
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
@@ -26,18 +30,62 @@ void Launcher::InitGLFW() {
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
-    snake.mainClass = "Main";
-    snake.dependencies = {
-                "Java-WebSocket-1.5.6.jar",
-                "slf4j-api-2.0.9.jar",
-                "logback-classic-1.5.3.jar",
-                "logback-core-1.5.3.jar"
-    };
 }
 
 void Launcher::Run() {
+
+    HANDLE hClient = NULL;
+    DWORD dwMaxClient = 2;
+    DWORD dwCurVersion = 0;
+    DWORD dwResult = 0;
+    PWLAN_INTERFACE_INFO_LIST pIfList = NULL;
+    PWLAN_INTERFACE_INFO pIfInfo = NULL;
+
+    std::string wifiName = "None";
+    std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
+
+        // Open a handle to the WLAN API
+        dwResult = WlanOpenHandle(dwMaxClient, NULL, &dwCurVersion, &hClient);
+        if (dwResult != ERROR_SUCCESS) {
+          std::cout << "Failed to open WLAN API handle. Error: " << dwResult << std::endl;
+          return;
+        }
+
+        // Enumerate the wireless interfaces
+        dwResult = WlanEnumInterfaces(hClient, NULL, &pIfList);
+        if (dwResult != ERROR_SUCCESS) {
+          std::cout << "Failed to enumerate interfaces. Error: " << dwResult << std::endl;
+          WlanCloseHandle(hClient, NULL);
+          return;
+        }
+
+        if (pIfList->dwNumberOfItems > 0) {
+          pIfInfo = (WLAN_INTERFACE_INFO *)&pIfList->InterfaceInfo[0];
+
+          // Get the connection attributes
+          DWORD dwSize = 0;
+          PWLAN_CONNECTION_ATTRIBUTES pConnAttributes;
+          dwResult = WlanQueryInterface(hClient, &pIfInfo->InterfaceGuid, wlan_intf_opcode_current_connection, NULL, &dwSize, (PVOID *)&pConnAttributes, NULL);
+          if (dwResult == ERROR_SUCCESS) {
+            if (pConnAttributes->isState == wlan_interface_state_connected) {
+              wifiName = converter.to_bytes(pConnAttributes->strProfileName);
+            } else {
+              wifiName = "None";
+            }
+            WlanFreeMemory(pConnAttributes);
+          } else {
+            wifiName = "None";
+          }
+        }
+
+        if (pIfList != NULL) {
+          WlanFreeMemory(pIfList);
+        }
+        WlanCloseHandle(hClient, NULL);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -54,8 +102,11 @@ void Launcher::Run() {
             ImVec2((WIDTH - buttonSize.x) / 2, (HEIGHT - buttonSize.y) / 2));
 
         if (ImGui::Button("Launch Snake", buttonSize)) {
-          LaunchJavaApp(snake);
+            system("gradlew run");
         }
+
+        ImGui::SetCursorPosX((WIDTH - buttonSize.x + 100) / 2);
+        ImGui::Text(("WIFI: " + wifiName).c_str());
 
         ImGui::End();
 
@@ -68,53 +119,6 @@ void Launcher::Run() {
 
         glfwSwapBuffers(window);
     }
-}
-
-bool Launcher::LaunchJavaApp(const JavaApp &app) {
-    std::string dependencies = ".\"";
-    for (auto dependency : app.dependencies) {
-        dependencies += ';' + dependency;
-    }
-    dependencies += "\" ";
-    if (dependencies.size() < 4) { dependencies = " "; }
-
-#ifdef _WIN32
-    std::string launchCommand = "java -cp ";
-    launchCommand += dependencies;
-    launchCommand += app.mainClass;
-
-    std::cout << "Launch Command: " << launchCommand << std::endl;
-
-    STARTUPINFO si;
-    PROCESS_INFORMATION pi;
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
-    if (!CreateProcess(nullptr,
-                       (LPSTR) launchCommand.c_str(),
-                       nullptr,
-                       nullptr,
-                       false,
-                       0,
-                       nullptr,
-                       nullptr,
-                       &si, &pi))
-    {
-        std::cerr << "[ERROR] Failed to launch Snake" << std::endl;
-        return false;
-    }
-#else
-    if (fork() == 0)
-    {
-        execlp("java", "java", "-cp", "dependencies", "Main", nullptr);
-        std::cerr << "[ERROR] Failed to launch Snake" << std::endl;
-    }
-    else
-    {
-        return false;
-    }
-#endif
-    return true;
 }
 
 Launcher::~Launcher() {

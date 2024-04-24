@@ -80,25 +80,30 @@ void setup() {
 
 void loop() {
   int16_t values[2];
-  values[0] = analogRead(32);
+  values[0] = analogRead(35);
   values[1] = analogRead(33);
 
+  uint8_t nvalues[2];
+
   if (values[0] > 3500) {
-    values[0] = 1;
+    nvalues[0] = 1;
   } else if (values[0] < 1500) {
-    values[0] = -1;
+    nvalues[0] = 2;
   } else {
-    values[0] = 0;
+    nvalues[0] = 0;
   }
   if (values[1] > 3500) {
-    values[1] = 1;
+    nvalues[1] = 1;
   } else if (values[1] < 1500) {
-    values[1] = -1;
+    nvalues[1] = 2;
   } else {
-    values[1] = 0;
+    nvalues[1] = 0;
   }
-  ws.binaryAll((uint8_t *)values, 4);
- // Serial.println(values[0]);
+  ws.binaryAll(nvalues, 4);
+  Serial.println(nvalues[0]);
+   Serial.println(nvalues[1]);
+   Serial.println(values[0]);
+   Serial.println(values[1]);
 
   delay(100);
   ws.cleanupClients();

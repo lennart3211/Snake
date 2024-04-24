@@ -20,9 +20,11 @@ file(GLOB SOURCES *.cpp)
 add_executable(Launcher ${SOURCES} ${IMGUI_SOURCES})
 
 # Link the necessary libraries
-target_link_libraries(Launcher glfw ${GLFW_LIBRARIES})
+target_link_libraries(Launcher glfw ${GLFW_LIBRARIES} Wlanapi)
 
 # Add OpenGL library
 find_package(OpenGL REQUIRED)
 include_directories(${OPENGL_INCLUDE_DIRS})
-target_link_libraries(Launcher ${OPENGL_LIBRARIES})
+target_link_libraries(Launcher ${OPENGL_LIBRARIES} )
+
+set_target_properties(Launcher PROPERTIES LINK_FLAGS "-mwindows")

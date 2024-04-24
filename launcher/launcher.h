@@ -14,19 +14,12 @@
 #include <unistd.h>
 #endif
 
-struct JavaApp {
-    std::string mainClass;
-    std::vector<std::string> dependencies;
-};
-
 class Launcher {
 private:
     const uint16_t WIDTH = 400, HEIGHT = 600;
     GLFWwindow *window;
 
-    JavaApp snake;
-
-public:
+  public:
     Launcher();
     ~Launcher();
 
@@ -34,6 +27,4 @@ public:
 
 private:
     void InitGLFW();
-
-    bool LaunchJavaApp(const JavaApp &app);
 };
